@@ -1,6 +1,5 @@
 package com.pieropan.propostaapp.listener;
 
-import com.pieropan.propostaapp.dto.PropostaResponseDto;
 import com.pieropan.propostaapp.entity.Proposta;
 import com.pieropan.propostaapp.mapper.PropostaMapper;
 import com.pieropan.propostaapp.repository.PropostaRepository;
@@ -19,8 +18,11 @@ public class PropostaConcluidaListener {
 
     @RabbitListener(queues = "${rabbitmq.queue.proposta.concluida}")
     public void propostaConcluida(Proposta proposta) {
-        propostaRepository.save(proposta);
-        PropostaResponseDto responseDto = PropostaMapper.INSTANCE.convertEntityToDto(proposta);
-        webSocketService.notificar(responseDto);
+        atualizarProposta(proposta);
+        webSocketService.notificar(PropostaMapper.INSTANCE.convertEntityToDto(proposta));
+    }
+
+    private void atualizarProposta(Proposta proposta) {
+        propostaRepository.atualizarProposta(proposta.getId(), proposta.getAprovada(), proposta.getObservacao());
     }
 }
